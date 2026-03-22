@@ -1,0 +1,114 @@
+[
+  {
+    "lead": "https://www.houstonroofingonline.com",
+    "url": "https://www.houstonroofingonline.com",
+    "source_type": "url",
+    "scraped_success": false,
+    "company_overview": "Houston Roofing Online is a roofing company serving the Houston area, offering a wide range of roofing solutions.",
+    "core_product": "Roofing services including installation, repair, and maintenance",
+    "target_customer": "Residential and commercial property owners in the Houston area",
+    "b2b_qualified": "Yes",
+    "b2b_reasoning": "The company has a website focused on roofing services and operates within a commercial scale industry",
+    "sales_questions": [
+      "What types of roofing materials do you offer?",
+      "Can you provide examples of recent projects you've completed?",
+      "How do you ensure customer satisfaction with your roofing services?"
+    ]
+  },
+  {
+    "lead": "https://www.springhilllandscaping.com",
+    "url": "https://www.springhilllandscaping.com",
+    "source_type": "url",
+    "scraped_success": true,
+    "company_overview": "Spring Hill Landscaping provides comprehensive landscaping services including home and commercial lawn maintenance, planting, sodding, tree care, stone edging, paver installation, and landscape design.",
+    "core_product": "Comprehensive landscaping services including lawn maintenance, planting, sodding, tree care, stone edging, paver installation, and landscape design.",
+    "target_customer": "Commercial and residential clients seeking professional landscaping solutions.",
+    "b2b_qualified": "Yes",
+    "b2b_reasoning": "The company offers services that are typically sold to businesses rather than individuals, and they emphasize their ability to cater to both residential and commercial properties.",
+    "sales_questions": [
+      "What specific landscaping needs do your clients have?",
+      "How do you measure the success of your projects?",
+      "Can you provide case studies or references for commercial clients?"
+    ]
+  },
+  {
+    "lead": "https://www.centraltexasbarkery.com",
+    "url": "https://www.centraltexasbarkery.com",
+    "source_type": "url",
+    "scraped_success": false,
+    "company_overview": "Centraltexasbarkery.com appears to be a business focused on pet care, likely offering services such as grooming and boarding for dogs.",
+    "core_product": "Pet grooming and boarding services",
+    "target_customer": "Individuals with dogs seeking pet care services",
+    "b2b_qualified": "No",
+    "b2b_reasoning": "The domain name and inferred services suggest a consumer-facing business rather than a B2B enterprise.",
+    "sales_questions": [
+      "What specific pet grooming and boarding services do you offer?",
+      "How do you cater to different dog breeds and sizes?",
+      "Can you provide references or case studies from satisfied clients?"
+    ]
+  },
+  {
+    "lead": "https://www.denverlockandsafe.com",
+    "url": "https://www.denverlockandsafe.com",
+    "source_type": "url",
+    "scraped_success": true,
+    "company_overview": "Denver Lock And Safe provides comprehensive locksmith services, including installation, repair, and maintenance of various types of locks, from traditional to high-security electronic locks, tailored to different sectors like automotive, residential, and commercial.",
+    "core_product": "Locksmith services (installation, repair, maintenance)",
+    "target_customer": "Commercial and residential clients across automotive, residential, and commercial sectors",
+    "b2b_qualified": "Yes",
+    "b2b_reasoning": "The company offers specialized services for different sectors and caters to clients in multiple industries, indicating a business-to-business focus.",
+    "sales_questions": [
+      "What specific locksmith services are required?",
+      "What type of locks do you need assistance with?",
+      "Can you provide estimates for installation or repair?"
+    ]
+  },
+  {
+    "lead": "https://www.redtruckbakery.com",
+    "url": "https://www.redtruckbakery.com",
+    "source_type": "url",
+    "scraped_success": true,
+    "company_overview": "Red Truck Bakery is a commercial bakery that provides custom bread and pastry orders to restaurants, cafes, and other foodservice establishments.",
+    "core_product": "Custom bread and pastry orders",
+    "target_customer": "Restaurants, cafes, and other foodservice establishments",
+    "b2b_qualified": "Yes",
+    "b2b_reasoning": "The website and content focus on serving commercial clients rather than individual consumers.",
+    "sales_questions": [
+      "What types of custom bread and pastries do you offer?",
+      "Can you provide samples or a portfolio of your work?",
+      "How do you ensure freshness and quality in your products?"
+    ]
+  },
+  {
+    "lead": "https://www.bostonplumbing.com",
+    "url": "https://www.bostonplumbing.com",
+    "source_type": "url",
+    "scraped_success": true,
+    "company_overview": "Boston Plumbing specializes in providing plumbing solutions and services to residential and commercial clients in the Boston area.",
+    "core_product": "Plumbing fixtures, pipes, and related home improvement products and services",
+    "target_customer": "Residential and commercial property owners, contractors, and builders in the Boston metropolitan area",
+    "b2b_qualified": "Yes",
+    "b2b_reasoning": "The company's focus on providing services to both residential and commercial clients indicates a business-to-business (B2B) model rather than consumer-facing.",
+    "sales_questions": [
+      "What types of plumbing services do you offer?",
+      "Can you provide case studies or references for your commercial projects?",
+      "How do you measure customer satisfaction and retention?"
+    ]
+  },
+  {
+    "lead": "https://www.piedmontmoving.com",
+    "url": "https://www.piedmontmoving.com",
+    "source_type": "url",
+    "scraped_success": true,
+    "company_overview": "Piedmont Moving Systems provides full-service commercial logistics and storage solutions, specializing in the secure transportation and storage of high-value assets for healthcare, biotech, and commercial clients.",
+    "core_product": "Commercial logistics and storage solutions including secure storage facilities and transportation services",
+    "target_customer": "Healthcare, biotech, and commercial teams in the Bay Area",
+    "b2b_qualified": "Yes",
+    "b2b_reasoning": "The company focuses on serving businesses and organizations, operating under an ISO 9001:2015 Certified quality management system, and working with clients such as healthcare and biotech companies.",
+    "sales_questions": [
+      "What specific types of high-value assets do you need to transport or store?",
+      "Do you require secure, monitored storage facilities?",
+      "Are there any particular industries or sectors you operate in?"
+    ]
+  }
+]

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Intelligence Automator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f4f5f7;
+  color: #172b4d;
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+header {
+  background: #0052cc;
+  padding: 0 32px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+header span {
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+  margin-left: 4px;
+}
+
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 24px;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid #dfe1e6;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+.panel-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid #dfe1e6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel-head h2 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5e6c84;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.panel-body { padding: 20px; }
+
+textarea {
+  width: 100%;
+  min-height: 160px;
+  border: 1px solid #dfe1e6;
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-size: 12.5px;
+  color: #172b4d;
+  background: #fafbfc;
+  resize: vertical;
+  outline: none;
+  line-height: 1.7;
+  transition: border-color 0.15s;
+}
+textarea:focus { border-color: #0052cc; background: #fff; }
+
+.hint { font-size: 12px; color: #8993a4; margin-bottom: 10px; }
+
+.btn-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+button {
+  padding: 7px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background 0.12s, box-shadow 0.12s;
+  line-height: 1;
+}
+.btn-primary {
+  background: #0052cc;
+  color: #fff;
+}
+.btn-primary:hover { background: #0065ff; }
+.btn-primary:disabled { background: #b3d4ff; color: #fff; cursor: not-allowed; }
+
+.btn-default {
+  background: #f4f5f7;
+  color: #42526e;
+  border: 1px solid #dfe1e6;
+}
+.btn-default:hover { background: #ebecf0; }
+
+.btn-subtle {
+  background: transparent;
+  color: #de350b;
+  border: 1px solid #de350b;
+}
+.btn-subtle:hover { background: #de350b; color: #fff; }
+
+/* Progress */
+#progress-section { display: none; }
+.progress-track {
+  height: 6px;
+  background: #dfe1e6;
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 12px 0 8px;
+}
+.progress-fill {
+  height: 100%;
+  background: #0052cc;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.progress-label { font-size: 12px; color: #5e6c84; }
+.progress-current { font-size: 11px; color: #0052cc; margin-top: 3px; min-height: 16px; }
+
+/* Results */
+#results-section { display: none; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat {
+  background: #fff;
+  border: 1px solid #dfe1e6;
+  border-radius: 4px;
+  padding: 16px;
+  text-align: center;
+}
+.stat .n { font-size: 28px; font-weight: 700; line-height: 1; }
+.stat .l { font-size: 11px; color: #8993a4; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-total .n { color: #0052cc; }
+.stat-yes .n    { color: #006644; }
+.stat-no .n     { color: #bf2600; }
+.stat-unc .n    { color: #974f0c; }
+
+.filter-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.ftag {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid #dfe1e6;
+  background: #fff;
+  color: #42526e;
+  transition: all 0.12s;
+}
+.ftag:hover, .ftag.on { background: #0052cc; color: #fff; border-color: #0052cc; }
+
+/* Lead rows */
+.lead-row {
+  background: #fff;
+  border: 1px solid #dfe1e6;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.lead-row:hover { border-color: #b3d4ff; }
+
+.lead-row-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.b-yes { background: #e3fcef; color: #006644; }
+.b-no  { background: #ffebe6; color: #bf2600; }
+.b-unc { background: #fffae6; color: #974f0c; }
+
+.lead-name-col { flex: 1; min-width: 0; }
+.lead-name-col strong { font-size: 13px; font-weight: 600; color: #172b4d; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lead-name-col small { font-size: 11px; color: #8993a4; }
+
+.chevron { font-size: 16px; color: #97a0af; transition: transform 0.18s; flex-shrink: 0; }
+.lead-row.open .chevron { transform: rotate(90deg); }
+
+.lead-row-body {
+  display: none;
+  padding: 0 16px 16px;
+  border-top: 1px solid #f4f5f7;
+}
+.lead-row.open .lead-row-body { display: block; }
+
+.brief-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin: 14px 0;
+}
+@media (max-width: 640px) { .brief-cols { grid-template-columns: 1fr; } }
+
+.brief-col label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #8993a4;
+  margin-bottom: 4px;
+}
+.brief-col p { font-size: 13px; color: #172b4d; line-height: 1.55; }
+
+.reasoning {
+  background: #f4f5f7;
+  border-left: 3px solid #0052cc;
+  border-radius: 0 3px 3px 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #5e6c84;
+  margin: 12px 0;
+}
+
+.questions-block { margin-top: 12px; }
+.questions-block label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #8993a4;
+  margin-bottom: 8px;
+}
+.questions-block ol { padding-left: 18px; }
+.questions-block li { font-size: 13px; color: #172b4d; margin-bottom: 5px; line-height: 1.5; }
+
+.meta { font-size: 11px; color: #b3bac5; margin-top: 12px; }
+
+.empty { text-align: center; padding: 48px 20px; color: #8993a4; font-size: 13px; }
+
+#toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: #172b4d; color: #fff;
+  padding: 10px 16px; border-radius: 4px;
+  font-size: 13px; display: none; z-index: 1000;
+  border-left: 3px solid #0052cc;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/><path d="M7 10l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <h1>Sales Intelligence Automator <span>— Lead Research & B2B Qualification</span></h1>
+</header>
+
+<div class="wrap">
+
+  <div class="panel">
+    <div class="panel-head"><h2>Enter Leads</h2></div>
+    <div class="panel-body">
+      <p class="hint">One lead per line — URL, company name, or both.</p>
+      <textarea id="leads-input" placeholder="https://www.houstonroofingonline.com
+Bright Play Turf – Artificial Turf & Landscaping, Chicago IL
+https://www.springhilllandscaping.com
+Joe's Backyard Landscaping – Phoenix AZ"></textarea>
+      <div class="btn-row">
+        <button class="btn-primary" id="run-btn" onclick="startAnalysis()">&#9654; Run Analysis</button>
+        <button class="btn-default" onclick="loadSamples()">Load Sample Leads</button>
+        <button class="btn-subtle" onclick="clearAll()">Clear Results</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="progress-section">
+    <div class="panel-head"><h2>Processing</h2></div>
+    <div class="panel-body">
+      <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+      <div class="progress-label" id="prog-label">Starting...</div>
+      <div class="progress-current" id="prog-current"></div>
+    </div>
+  </div>
+
+  <div id="results-section">
+    <div class="stats-row">
+      <div class="stat stat-total"><div class="n" id="s-total">0</div><div class="l">Total</div></div>
+      <div class="stat stat-yes"><div class="n" id="s-yes">0</div><div class="l">B2B Qualified</div></div>
+      <div class="stat stat-no"><div class="n" id="s-no">0</div><div class="l">Not Qualified</div></div>
+      <div class="stat stat-unc"><div class="n" id="s-unc">0</div><div class="l">Uncertain</div></div>
+    </div>
+
+    <div class="filter-row">
+      <button class="ftag on" onclick="setFilter('all',this)">All</button>
+      <button class="ftag" onclick="setFilter('yes',this)">B2B Qualified</button>
+      <button class="ftag" onclick="setFilter('no',this)">Not Qualified</button>
+      <button class="ftag" onclick="setFilter('uncertain',this)">Uncertain</button>
+    </div>
+
+    <div id="results-list"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SAMPLES = `https://www.houstonroofingonline.com
+Bright Play Turf – Artificial Turf & Landscaping, Chicago IL
+https://www.springhilllandscaping.com
+Joe's Backyard Landscaping – Phoenix AZ
+https://www.centraltexasbarkery.com
+Sunrise Plumbing & Drain Services – Tampa FL
+https://www.denverlockandsafe.com
+Green Leaf Lawn Care – Columbus OH
+https://www.redtruckbakery.com
+Blue Ridge HVAC Services – Roanoke VA
+Acme Roofing & Construction – Dallas TX
+https://www.bostonplumbing.com
+Pacific Northwest Tree Care – Portland OR
+Maple Street Auto Repair – Madison WI
+https://www.piedmontmoving.com`;
+
+let filter = 'all';
+let results = [];
+let poll = null;
+
+function loadSamples() {
+  document.getElementById('leads-input').value = SAMPLES;
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2500);
+}
+
+async function startAnalysis() {
+  const raw = document.getElementById('leads-input').value.trim();
+  if (!raw) { toast('Enter at least one lead.'); return; }
+
+  document.getElementById('run-btn').disabled = true;
+  document.getElementById('progress-section').style.display = 'block';
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('prog-label').textContent = 'Starting...';
+  document.getElementById('prog-current').textContent = '';
+
+  const res = await fetch('/analyze', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({leads: raw})
+  });
+  const data = await res.json();
+  if (data.error) { toast(data.error); return; }
+  pollStatus(data.job_id, data.total);
+}
+
+function pollStatus(jobId, total) {
+  poll = setInterval(async () => {
+    const res = await fetch('/status/' + jobId);
+    const job = await res.json();
+    const pct = total > 0 ? Math.round(job.done / total * 100) : 0;
+    document.getElementById('prog-fill').style.width = pct + '%';
+    document.getElementById('prog-label').textContent = job.done + ' / ' + total + ' leads processed (' + pct + '%)';
+    if (job.current) document.getElementById('prog-current').textContent = 'Processing: ' + job.current;
+    if (job.status === 'done') {
+      clearInterval(poll);
+      document.getElementById('prog-current').textContent = 'Done.';
+      document.getElementById('run-btn').disabled = false;
+      await fetchResults();
+    }
+  }, 1200);
+}
+
+async function fetchResults() {
+  const res = await fetch('/results');
+  results = await res.json();
+  render();
+  document.getElementById('results-section').style.display = 'block';
+}
+
+function setFilter(f, btn) {
+  filter = f;
+  document.querySelectorAll('.ftag').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+
+function render() {
+  const list = document.getElementById('results-list');
+  let shown = filter === 'all' ? results : results.filter(r => (r.b2b_qualified||'').toLowerCase() === filter);
+
+  document.getElementById('s-total').textContent = results.length;
+  document.getElementById('s-yes').textContent = results.filter(r => (r.b2b_qualified||'').toLowerCase() === 'yes').length;
+  document.getElementById('s-no').textContent = results.filter(r => (r.b2b_qualified||'').toLowerCase() === 'no').length;
+  document.getElementById('s-unc').textContent = results.filter(r => !['yes','no'].includes((r.b2b_qualified||'').toLowerCase())).length;
+
+  if (!shown.length) {
+    list.innerHTML = '<div class="empty">No results to show.</div>';
+    return;
+  }
+
+  list.innerHTML = shown.map((r, i) => {
+    const q = (r.b2b_qualified||'uncertain').toLowerCase();
+    const bc = q === 'yes' ? 'b-yes' : q === 'no' ? 'b-no' : 'b-unc';
+    const qs = Array.isArray(r.sales_questions) ? r.sales_questions : [];
+    return `
+<div class="lead-row" id="lr${i}">
+  <div class="lead-row-head" onclick="toggle(${i})">
+    <span class="badge ${bc}">${x(r.b2b_qualified||'Uncertain')}</span>
+    <div class="lead-name-col">
+      <strong>${x(r.lead)}</strong>
+      ${r.url ? '<small>' + x(r.url) + '</small>' : ''}
+    </div>
+    <span class="chevron">›</span>
+  </div>
+  <div class="lead-row-body">
+    <div class="brief-cols">
+      <div class="brief-col"><label>Overview</label><p>${x(r.company_overview||'—')}</p></div>
+      <div class="brief-col"><label>Core Product / Service</label><p>${x(r.core_product||'—')}</p></div>
+      <div class="brief-col"><label>Target Customer</label><p>${x(r.target_customer||'—')}</p></div>
+    </div>
+    ${r.b2b_reasoning ? '<div class="reasoning">' + x(r.b2b_reasoning) + '</div>' : ''}
+    ${qs.length ? '<div class="questions-block"><label>Discovery Questions</label><ol>' + qs.map(q => '<li>' + x(q) + '</li>').join('') + '</ol></div>' : ''}
+    <div class="meta">Source: ${x(r.source_type||'unknown')} &nbsp;|&nbsp; Scraped: ${r.scraped_success ? 'yes' : 'no'}</div>
+  </div>
+</div>`;
+  }).join('');
+}
+
+function toggle(i) {
+  document.getElementById('lr' + i).classList.toggle('open');
+}
+
+function x(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function clearAll() {
+  if (!confirm('Clear all saved results?')) return;
+  await fetch('/clear', {method: 'POST'});
+  results = [];
+  render();
+  document.getElementById('results-section').style.display = 'none';
+  toast('Cleared.');
+}
+
+(async () => {
+  const res = await fetch('/results');
+  results = await res.json();
+  if (results.length) { render(); document.getElementById('results-section').style.display = 'block'; }
+})();
+</script>
+</body>
+</html>
