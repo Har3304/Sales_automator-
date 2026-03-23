@@ -6,7 +6,7 @@ import threading
 
 logger = logging.getLogger(__name__)
 
-MODEL_ID = os.environ.get("HF_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
+MODEL_ID = os.environ.get("HF_MODEL", "Qwen/Qwen2.5-7B-Instruct")
 
 _model = None
 _tokenizer = None
