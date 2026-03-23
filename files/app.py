@@ -118,7 +118,7 @@ def job_errors(job_id):
 
 
 if __name__ == "__main__":
-    model_id = os.environ.get("HF_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
+    model_id = os.environ.get("HF_MODEL", "Qwen/Qwen2.5-7B-Instruct")
     print("\n" + "=" * 60)
     print("Sales Intelligence Automator")
     print("Model : " + model_id)
