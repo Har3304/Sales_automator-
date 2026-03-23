@@ -1,0 +1,180 @@
+HOW IT WORKS — Sales Intelligence Automator
+============================================
+
+This document explains what the system does under the hood and how it lines
+up with what the assignment asked for. I'll keep it practical rather than
+just listing bullet points.
+
+
+THE CORE IDEA
+-------------
+Sales teams waste a huge amount of time doing the same research before every
+discovery call — visit the website, figure out what the company does, decide
+if they're even worth pursuing, write down a few questions. This tool
+automates all of that. You paste in a list of company URLs or names, click
+a button, and it comes back with a structured brief for each one.
+
+
+HOW THE PIPELINE WORKS
+-----------------------
+There are three stages: scrape → analyze → store. They're completely
+separate modules, which makes the whole thing easy to follow and easy to
+swap out individual pieces.
+
+1. SCRAPING (scraper.py)
+
+   First the system figures out what kind of input it's dealing with. If
+   you paste in a URL like https://www.piedmontmoving.com, it fetches that
+   directly. If you paste in a company name like "Joe's Backyard Landscaping
+   – Phoenix AZ", it strips out the location and description, slugifies the
+   name, and tries www.joesbackyardlandscaping.com. Not perfect, but it works
+   for a lot of cases.
+
+   Once it has the HTML, it doesn't just dump the raw page into the model.
+   That would be a mess. Instead it does a two-pass clean:
+
+   First pass — removes all the tags that are never useful: script, style,
+   nav, footer, header, iframe, svg, button, forms. These are structural
+   elements that contain zero business information.
+
+   Second pass — looks at CSS classes and IDs on every remaining element.
+   Anything that matches patterns like "cookie", "banner", "sidebar",
+   "newsletter", "promo", "gdpr" gets removed. This catches the stuff the
+   first pass misses — those full-width cookie consent bars, floating chat
+   widgets, subscription popups.
+
+   What's left is the actual content: what the company does, what they offer,
+   who they serve. It caps at 4,000 characters before sending to the model,
+   which is plenty for a homepage.
+
+   If the main page is suspiciously short (under 300 characters — usually
+   means it's a JavaScript-heavy site that didn't render properly), it also
+   tries fetching /about as a fallback.
+
+2. ANALYSIS (analyzer.py)
+
+   The cleaned content goes to the language model along with a carefully
+   written system prompt. The prompt tells the model it's a B2B sales analyst
+   and instructs it to return ONLY a JSON object — no preamble, no
+   explanation, just the data.
+
+   The model fills in:
+   - company_overview: what they actually do in plain English
+   - core_product: their primary offering
+   - target_customer: who buys from them
+   - b2b_qualified: Yes, No, or Uncertain
+   - b2b_reasoning: why it made that call
+   - sales_questions: three specific questions for a discovery call
+
+   The prompt is explicit about b2b_qualified — "Yes" means primarily sells
+   to businesses, "No" means primarily sells to consumers, "Uncertain" means
+   genuinely can't tell. It also says a company isn't automatically B2B just
+   because it has some commercial clients — it has to be their primary market.
+
+   The model doesn't always output perfect JSON (especially the smaller 1.5B
+   one), so there's a two-pass parser: first tries a direct json.loads(), and
+   if that fails it uses a regex to find the outermost {...} block and tries
+   again. This catches cases where the model adds a bit of preamble text
+   before the JSON.
+
+3. STORAGE (storage.py)
+
+   Results go into data/results.json. It's a flat JSON file — not a database,
+   but for a prototype it works fine. It deduplicates by lead URL, so if you
+   run the same lead twice it updates the existing record rather than creating
+   a duplicate. Results survive page reloads and server restarts.
+
+   The storage module returns plain Python dicts, which means swapping the
+   JSON file for a Postgres write or a CRM API call is a one-function change.
+
+
+THE WEB INTERFACE
+-----------------
+The UI is a single HTML file. When you click Run Analysis, it POSTs the leads
+to Flask, which starts a background thread and immediately returns a job ID.
+The frontend then polls /status/<job_id> every 1.2 seconds and updates the
+progress bar as each lead completes.
+
+This matters because if the server blocked during model inference, the browser
+would just hang with no feedback. The threading approach keeps things
+responsive — you can see "Processing: https://www.denverlockandsafe.com" while
+it's working, and the progress bar actually moves.
+
+Results show up as expandable cards. Each card shows the B2B qualification
+badge, company overview, core product, target customer, the reasoning, and
+the three sales questions. There are filter buttons to show only Qualified,
+Not Qualified, or Uncertain leads — useful when you've run a large batch and
+just want to see the actionable ones.
+
+The "Load Sample Leads" button pre-fills the 15 leads from the assignment
+spec. "Clear Results" wipes the JSON file and resets the UI.
+
+
+HOW IT MEETS THE ASSIGNMENT REQUIREMENTS
+-----------------------------------------
+
+"Accept lead input — URLs, company names, or imperfect information"
+→ Handled. URLs go straight to the scraper. Company names get a URL guessed
+from the name. If that fails, the model still analyzes based on the name
+alone — it can often infer industry and customer type just from "Blue Ridge
+HVAC Services – Roanoke VA" without a website.
+
+"Gather information from the web, filter irrelevant elements"
+→ Handled. The scraper strips nav, footer, cookie banners, sidebars, popups,
+and promotional boilerplate. It also has the /about fallback for lightweight
+or JS-heavy homepages. It uses a real browser User-Agent header so most sites
+don't block it.
+
+"Use an AI/LLM for analysis"
+→ The whole analysis stage runs through Qwen2.5 via HuggingFace Transformers.
+It's a local model — no API key, no cost, no rate limits. The model is loaded
+once and reused for every lead in the batch (the _load_model function has a
+lazy-loading lock so it only downloads and initializes once per session).
+
+"Generate a structured sales brief with all five required fields"
+→ Company overview, core product, target customer, B2B qualification decision,
+and three sales questions — all five are in the JSON output for every lead.
+If the model fails to produce valid JSON for any reason, the system catches it
+gracefully and returns an "Uncertain" result with an error message rather than
+crashing.
+
+"Simple web interface to enter leads, run analysis, view summaries"
+→ All there. Single-page app, progress tracking, expandable result cards,
+filter by qualification status.
+
+"Results should be stored"
+→ Stored in data/results.json. Persists between sessions. Deduplicates.
+
+
+KNOWN LIMITATIONS (honest ones)
+---------------------------------
+The 1.5B model is sometimes too lenient — it occasionally marks consumer
+businesses as B2B because it's not strict enough at following instructions.
+The 7B model handles this much better but is slower on CPU.
+
+For company name inputs, the URL guessing works on simple names but breaks
+on names with long descriptions or special formatting. A proper web search
+lookup (DuckDuckGo or SerpAPI) would fix this.
+
+Some websites are JavaScript-heavy and return almost nothing with a simple
+HTTP request. The scraper handles this by falling back to /about and by
+still passing the company name to the model when content is empty, but a
+headless browser like Playwright would get better content on those sites.
+
+Processing is sequential — one lead at a time. For 7 leads that's fine.
+For 100 leads you'd want async scraping at minimum.
+
+
+WHAT WOULD MAKE IT PRODUCTION-READY
+-------------------------------------
+Realistically, to turn this into something a sales team actually uses daily:
+
+- Swap the JSON file for a proper database (SQLite at minimum, Postgres if
+  multiple users)
+- Add async scraping so multiple leads process in parallel
+- Add a CSV export button so reps can pull results into their CRM
+- Add a webhook or direct HubSpot/Salesforce integration for qualified leads
+- Use a cloud model API (Gemini, Claude, GPT-4) instead of local for better
+  accuracy and faster processing — local models are great for no-cost
+  prototyping but cloud models give significantly better results
+- Add confidence scores alongside the Yes/No decision for easier prioritization

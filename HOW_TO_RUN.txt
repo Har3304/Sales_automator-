@@ -1,0 +1,155 @@
+HOW TO RUN — Sales Intelligence Automator
+==========================================
+
+Hey, so this is actually pretty straightforward to get running. I'll walk you
+through it step by step. Shouldn't take more than 5 minutes to set up.
+
+
+WHAT YOU NEED FIRST
+-------------------
+- Python 3.10 or newer (3.11/3.12 recommended — avoid 3.14 if possible,
+  it has some known issues with PyTorch)
+- pip
+- A decent internet connection for the first run (it needs to download the
+  language model from HuggingFace, which is a few GB)
+- At least 8GB of RAM free if you're using the 7B model. For the 1.5B model,
+  4GB is enough.
+
+
+STEP 1 — Get the files
+-----------------------
+Clone or download the project and navigate into the files folder:
+
+    cd files
+
+
+STEP 2 — Set up a virtual environment (recommended)
+-----------------------------------------------------
+You don't have to, but it keeps things clean:
+
+    python -m venv .venv
+
+Then activate it:
+
+    On Windows:   .venv\Scripts\activate
+    On Mac/Linux: source .venv/bin/activate
+
+
+STEP 3 — Install dependencies
+-------------------------------
+    pip install -r requirements.txt
+
+This installs Flask, BeautifulSoup, Transformers, PyTorch, and a few other
+things. PyTorch is the big one — it might take a couple minutes depending on
+your connection.
+
+
+STEP 4 — Run the app
+---------------------
+
+IMPORTANT: There are two model options. Read this before you just run it.
+
+--- Option A: Qwen 1.5B (Recommended for most machines) ---
+
+This is the smaller, faster model. It downloads about 3GB, loads in under
+30 seconds, and processes each lead in roughly 30-60 seconds on a regular
+laptop CPU. Results are decent — good enough to demonstrate the system.
+
+To use this, set the model before running:
+
+    On Windows (Command Prompt):
+        set HF_MODEL=Qwen/Qwen2.5-1.5B-Instruct
+        python app.py
+
+    On Windows (PowerShell):
+        $env:HF_MODEL="Qwen/Qwen2.5-1.5B-Instruct"
+        python app.py
+
+    On Mac/Linux:
+        HF_MODEL=Qwen/Qwen2.5-1.5B-Instruct python app.py
+
+
+--- Option B: Qwen 7B (Better quality, but slower) ---
+
+This is the larger model. It's noticeably smarter — more accurate B2B
+decisions, better sales questions, more coherent overviews. But it downloads
+around 15GB and on a CPU without a GPU, each lead can take 3-8 minutes to
+process. For 7 leads that's potentially 30-60 minutes total. If your machine
+has a dedicated GPU it'll be much faster, but on CPU it's a real wait.
+
+Only use this if you have time to spare or a GPU:
+
+    On Windows (Command Prompt):
+        set HF_MODEL=Qwen/Qwen2.5-7B-Instruct
+        python app.py
+
+    On Mac/Linux:
+        HF_MODEL=Qwen/Qwen2.5-7B-Instruct python app.py
+
+If you don't set anything, the app defaults to the 7B model (as shown in
+app.py), so make sure to explicitly set it to 1.5B if you want the faster one.
+
+
+STEP 5 — Open the app
+----------------------
+Once you see this in the terminal:
+
+    ============================================================
+    Sales Intelligence Automator
+    Model : Qwen/Qwen2.5-1.5B-Instruct   (or whichever you chose)
+    Server: http://127.0.0.1:5000
+    ============================================================
+
+Open your browser and go to:   http://localhost:5000
+
+That's it. The app is running.
+
+
+FIRST RUN NOTE
+--------------
+The very first time you run an analysis, the model needs to download from
+HuggingFace. You'll see a progress bar in the terminal like:
+
+    Loading weights: 45%|████      | 153/339 [00:08<00:09, 14.84it/s]
+
+This is normal. It only happens once — after that the model is cached locally
+and loads instantly on subsequent runs.
+
+
+COMMON ISSUES
+-------------
+
+"torch_dtype is deprecated" warning — safe to ignore, it's just a warning
+from a newer version of Transformers. Doesn't affect anything.
+
+"Some parameters are on the meta device" — this means the 7B model is too
+large for your RAM and is offloading to disk. It'll still work but will be
+very slow. Switch to the 1.5B model instead.
+
+"RuntimeError: Tensor on device cpu is not on the expected device meta!" —
+This is a Python 3.14 + PyTorch compatibility bug. Either downgrade to
+Python 3.12, or use the Gemini API version of analyzer.py instead.
+
+Results not showing up — check that data/results.json exists and isn't
+corrupted. If in doubt, click "Clear Results" in the UI and run again.
+
+Port already in use — something else is on port 5000. Either kill that
+process or change the port at the bottom of app.py:
+    app.run(debug=True, port=5001)
+
+
+USING THE GEMINI API INSTEAD (if local model is too slow)
+----------------------------------------------------------
+If the local model is taking too long, there's an alternative analyzer.py
+that uses Google's Gemini API — free tier, no credit card, very fast.
+
+1. Get a free API key at: https://aistudio.google.com/app/apikey
+2. Install the new SDK:
+       pip install google-genai
+3. Replace analyzer.py with the Gemini version
+4. Run with your key:
+       On Windows:   set GEMINI_API_KEY=your_key_here && python app.py
+       On Mac/Linux: GEMINI_API_KEY=your_key_here python app.py
+
+Each lead processes in about 2-5 seconds with Gemini vs minutes with the
+local model.
